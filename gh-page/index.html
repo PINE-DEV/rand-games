@@ -1,38 +1,116 @@
 <!doctype html>
 <html>
     <head>
-        <meta charset="UTF-8" />
-        <title>hello phaser!</title>
-        <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
+	<meta charset="UTF-8" />
+	<title>hello phaser!</title>
+	<script src="https://cdn.jsdelivr.net/phaser/2.6.2/phaser.min.js"></script>
     </head>
     <body>
+	<script type="text/javascript">
+	 window.onload = function() {
 
-    <script type="text/javascript">
+	     //  Note that this html file is set to pull down Phaser 2.5.0 from the JS Delivr CDN.
+	     //  Although it will work fine with this tutorial, it's almost certainly not the most current version.
+	     //  Be sure to replace it with an updated version before you start experimenting with adding your own code.
 
-    window.onload = function() {
+	     var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+	     var NOT_LOADED = true;
+	     var CREATE_MONEY_COUNTER = 0;
 
-        //  Note that this html file is set to pull down Phaser 2.5.0 from the JS Delivr CDN.
-        //  Although it will work fine with this tutorial, it's almost certainly not the most current version.
-        //  Be sure to replace it with an updated version before you start experimenting with adding your own code.
+	     Money = function (game, rotateSpeed) {
 
-        var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create });
+		 var euro_sprites = ['euro-5', 'euro-10', 'euro-20', 'euro-50', 'euro-100', 'euro-200', 'euro-500'];
+		 var euro_sprite = Phaser.ArrayUtils.getRandomItem(euro_sprites);
+		 
+		 Phaser.Sprite.call(this, game, game.world.randomX, game.world.randomY, euro_sprite);
 
-        function preload () {
+		 this.anchor.setTo(0.5, 0.5);
 
-            game.load.image('logo', 'phaser.png');
+		 this.rotateSpeed = rotateSpeed;
 
-        }
+		 var randomScale = 0.3; //+ Math.random()/10;
 
-        function create () {
+		 this.scale.setTo(randomScale, randomScale)
 
-            var logo = game.add.sprite(game.world.centerX, game.world.centerY, 'logo');
-            logo.anchor.setTo(0.5, 0.5);
+		 game.add.existing(this);
 
-        }
+	     };
 
-    };
+	     Money.prototype = Object.create(Phaser.Sprite.prototype);
+	     Money.prototype.constructor = Money;
 
-    </script>
+	     Money.prototype.update = function() {
 
+		 //  Automatically called by World.update
+		 this.angle += this.rotateSpeed;
+
+	     };
+	     
+	     function preload () {
+		 // Nothing to see here. For now.
+	     }
+
+	     function loadStart() {
+		 console.log('Loading...');
+	     }
+
+	     function loadComplete() {
+		 console.log('Load completed.');
+		 init_game();
+		 NOT_LOADED = false;
+	     }
+
+	     function init_game() {
+		 // Music
+		 music = game.add.audio('music');
+		 music.loopFull();
+		 
+		 // Money sprites
+		 moneys = game.add.group();
+		 moneys.enableBody = true;
+		 moneys.physicsBodyType = Phaser.Physics.ARCADE
+	     }
+	     
+	     function create () {
+		 // LOADS
+		 game.load.image('logo', 'phaser.png');
+		 game.load.image('euro-5', 'euros/5.jpg');
+		 game.load.image('euro-10', 'euros/10.jpg');
+		 game.load.image('euro-20', 'euros/20.jpg');
+		 game.load.image('euro-50', 'euros/50.jpg');
+		 game.load.image('euro-100', 'euros/100.jpg');
+		 game.load.image('euro-200', 'euros/200.jpg');
+		 game.load.image('euro-500', 'euros/500.jpg');
+
+		 game.load.audio('music', 'audio/Fretless.mp3');
+
+		 game.load.start();
+		 
+		 game.load.onLoadStart.add(loadStart, this);
+		 game.load.onLoadComplete.add(loadComplete, this);
+	     }
+
+	     function update() {
+		 if(NOT_LOADED){
+		     return;
+		 }
+		 
+		 CREATE_MONEY_COUNTER++;
+		 if(CREATE_MONEY_COUNTER > 100) {
+		     CREATE_MONEY_COUNTER = 0;
+
+		     new Money(game, Math.random() + 1);
+		     
+		     /* var money = moneys.create(200, 200, euro_sprite);
+			money.scale = {x: 0.3, y: 0.3, type: 25};
+			console.log('created money');
+			console.log(money);*/
+		 }
+		 
+	     }
+
+	 };
+
+	</script>
     </body>
 </html>
